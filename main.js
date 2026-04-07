@@ -47,6 +47,6 @@ app.use((err, req, res, next) => {
 
 //서버 실행
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`👉 http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`http://localhost:${PORT}`);
 });
