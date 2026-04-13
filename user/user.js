@@ -9,7 +9,7 @@ exports.signup = async (req, res) => {
   const hashed = await bcrypt.hash(password, 10); //비밀번호
 
   try {
-    await userModel.createUser(username, email, hashed, nickname);
+    await userModel.createUser(nickname, hashed, email);
     logger.info(`회원가입 성공: ${email}`, "auth-service");
     return res.status(200).json({ message: "회원가입 완료!" });
   } catch (err) {
@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
     logger.warn(`로그인 실패 - 미가입 이메일: ${email}`, "auth-service");
     return res.status(302).json({ message: "가입되지 않은 이메일 입니다." }); //오류메시지
   }
-  const match = await bcrypt.compare(password, user.password); //bcrypt암호화
+  const match = await bcrypt.compare(password, user.passwd); //bcrypt암호화
   if (!match) {
     logger.warn(`로그인 실패 - 비밀번호 불일치: ${email}`, "auth-service");
     return res.status(303).json({ message: "비밀번호가 틀립니다." }); //오류메시지
@@ -47,7 +47,7 @@ exports.login = async (req, res) => {
   req.session.nickname = user.nickname; //세션에 정보 저장(로그인여부, 이메일, 사용자이름, 등급)
 
   req.session.user = {
-    id: user.id,
+    id: user.user_id,
     email: user.email,
     nickname: user.nickname,
   };
@@ -78,8 +78,8 @@ exports.checkLogin = (req, res) => {
   if (req.session && req.session.is_logined) {
     return res.json({
       is_logined: true,
-      email: user.email,
-      nickname: user.nickname,
+      email: req.session.email,
+      nickname: req.session.nickname,
     });
   }
 
