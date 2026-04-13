@@ -1,12 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const db= require('./db'); 
+
+const userRouter = require("./user/userRouter");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 //기본 미들웨어 설정
-
 // CORS 설정 (프론트 연결용)
 app.use(
   cors({
@@ -18,14 +20,16 @@ app.use(
 // JSON 요청 파싱
 app.use(express.json());
 
-//기본 라우트 (테스트용)
+//기본 라우트
 app.get("/", (req, res) => {
   res.status(200).json({
     message: "NewsBee BackEnd Server Running",
   });
 });
 
-//라우터 연결 (나중에 추가)
+//라우터 연결
+app.use("/newsbee", userRouter);
+
 
 // 404 처리
 app.use((req, res, next) => {
