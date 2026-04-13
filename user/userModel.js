@@ -27,7 +27,7 @@ exports.viewUser = async () => {
 };
 
 //사용자 삭제
-exports.delUser = async (id) => {
+exports.deleteUser = async (id) => {
   const [rows] = await db.query("DELETE from user where user_id=?", [id]); //사용자 삭제
   return rows;
 };

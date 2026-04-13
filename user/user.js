@@ -43,7 +43,7 @@ exports.login = async (req, res) => {
     return res.status(303).json({ message: "비밀번호가 틀립니다." }); //오류메시지
   }
   req.session.is_logined = true;
-  req.session.useremail = user.email;
+  req.session.email = user.email;
   req.session.nickname = user.nickname; //세션에 정보 저장(로그인여부, 이메일, 사용자이름, 등급)
 
   req.session.user = {
@@ -71,6 +71,21 @@ exports.logout = (req, res) => {
     }
     res.json({ message: "로그아웃되었습니다.", is_logined: false }); //로그아웃 성공 시 is_logined=false로 설정
   });
+};
+
+exports.deleteuser = async (req, res) => {
+  const userId = req.session.user?.id;
+  try {
+    await userModel.deleteUser(userId); // DB에서 삭제
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(306).json({ message: "세션 삭제 실패" });
+      }
+      res.json({ message: "회원탈퇴 완료", is_logined: false });
+    });
+  } catch (err) {
+    return res.status(307).json({ message: "회원탈퇴 실패" });
+  }
 };
 
 exports.checkLogin = (req, res) => {
