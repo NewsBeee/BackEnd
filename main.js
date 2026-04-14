@@ -4,6 +4,8 @@ require("dotenv").config();
 const db= require('./db'); 
 
 const userRouter = require("./user/userRouter");
+//const onboardingRouter = require("./onboarding/onboardingRouter");
+//const quizRouter = require("./quiz/quizRouter");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -29,7 +31,8 @@ app.get("/", (req, res) => {
 
 //라우터 연결
 app.use("/newsbee", userRouter);
-
+//app.use("/newsbee", onboardingRouter);
+//app.use("/newsbee", quizRouter);
 
 // 404 처리
 app.use((req, res, next) => {
