@@ -31,3 +31,12 @@ exports.deleteUser = async (id) => {
   const [rows] = await db.query("DELETE from user where user_id=?", [id]); //사용자 삭제
   return rows;
 };
+
+//닉네임 수정
+exports.updateUser = async () => {
+  const [rows] = await db.query(
+    "UPDATE user SET nickname = ? WHERE user_id = ?",
+    [nickname, id],
+  );
+  return rows;
+};
