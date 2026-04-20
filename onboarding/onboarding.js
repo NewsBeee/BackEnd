@@ -9,7 +9,7 @@ exports.getQuestions = async (req, res) => {
     return res.status(200).json({
       timestamp: new Date().toISOString(),
       success: true,
-      code: "200",
+      code: "ONBOARDING_200",
       message: "온보딩 문항 조회에 성공했습니다.",
       result: {
         questions,
@@ -17,14 +17,14 @@ exports.getQuestions = async (req, res) => {
     });
   } catch (err) {
     logger.error(
-      `온보딩 문항 조회 실패 - [ERROR_CODE:004] - ${err.message}`,
+      `온보딩 문항 조회 실패 - [ERROR_CODE:003] - ${err.message}`,
       "onboarding-service",
     );
 
     return res.status(500).json({
       timestamp: new Date().toISOString(),
       success: false,
-      code: "004",
+      code: "ONBOARDING_003",
       message: "온보딩 문항 조회에 실패했습니다.",
       result: null,
     });
@@ -39,7 +39,7 @@ exports.submitAnswers = async (req, res) => {
     return res.status(400).json({
       timestamp: new Date().toISOString(),
       success: false,
-      code: "001",
+      code: "ONBOARDING_001",
       message: "답안 형식이 올바르지 않습니다.",
       result: null,
     });
@@ -69,7 +69,7 @@ exports.submitAnswers = async (req, res) => {
     return res.status(200).json({
       timestamp: new Date().toISOString(),
       success: true,
-      code: "200",
+      code: "ONBOARDING_200",
       message: "초기 어휘 레벨 측정이 완료되었습니다.",
       result: {
         level,
@@ -84,7 +84,7 @@ exports.submitAnswers = async (req, res) => {
     return res.status(500).json({
       timestamp: new Date().toISOString(),
       success: false,
-      code: "702",
+      code: "ONBOARDING_702",
       message: "온보딩 답안 제출에 실패했습니다.",
       result: null,
     });
