@@ -1,3 +1,5 @@
+const db = require("../db");
+
 //임시 문제 1개
 //AI 연동 시 수정
 const promotionQuestions = [
@@ -26,4 +28,19 @@ exports.getQuestions = async () => {
 //내부 채점용 원본 문제
 exports.getRawQuestions = async () => {
   return promotionQuestions;
+};
+
+// 사용자 정보 조회
+exports.findUserById = async (userId) => {
+  const [rows] = await db.query("SELECT * FROM User WHERE user_id = ?", [userId]);
+  return rows[0];
+};
+
+// 사용자 레벨 업데이트
+exports.updateUserLevel = async (userId, level) => {
+  const [rows] = await db.query(
+    "UPDATE User SET level = ? WHERE user_id = ?",
+    [level, userId],
+  );
+  return rows;
 };
