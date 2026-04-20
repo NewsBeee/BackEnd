@@ -6,6 +6,7 @@ const db= require('./db');
 const userRouter = require("./user/userRouter");
 const onboardingRouter = require("./onboarding/onboardingRouter");
 const quizRouter = require("./quiz/quizRouter");
+const challengeRouter = require("./challenge/challengeRouter");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -33,6 +34,7 @@ app.get("/", (req, res) => {
 app.use("/newsbee", userRouter);
 app.use("/newsbee", onboardingRouter);
 app.use("/newsbee", quizRouter);
+app.use("/newsbee", challengeRouter);
 
 // 404 처리
 app.use((req, res, next) => {
