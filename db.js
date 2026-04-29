@@ -3,10 +3,10 @@ var mysql = require("mysql2");
 
 var db = mysql
   .createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    host: process.env.DB_HOST, //gachon-01.cjysow2c4blk.ap-northeast-2.rds.amazonaws.com
+    user: process.env.DB_USER, //admin
+    password: process.env.DB_PASSWORD, //newsbee-01
+    database: process.env.DB_NAME, //gachon-01
     multipleStatements: true,
   })
   .promise();
