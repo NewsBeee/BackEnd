@@ -40,3 +40,42 @@ exports.updateUser = async () => {
   );
   return rows;
 };
+
+exports.findUserstats = async (userId) => {
+  const [rows] = await db.query(
+    `SELECT
+        u.level AS level,
+
+        (
+          SELECT COUNT(*)
+          FROM Reading_log r
+          WHERE r.user_id = u.user_id
+        ) AS readArticleCount,
+
+        (
+          SELECT COUNT(*)
+          FROM Voca v
+          WHERE v.user_id = u.user_id
+        ) AS savedVocabularyCount,
+
+        (
+          SELECT COUNT(*)
+          FROM Voca v
+          WHERE v.user_id = u.user_id
+            AND v.learning_status = 'MEMORIZED'
+        ) AS understoodVocabularyCount,
+
+        (
+          SELECT COUNT(*)
+          FROM Voca v
+          WHERE v.user_id = u.user_id
+            AND v.learning_status = 'UNMEMORIZED'
+        ) AS notUnderstoodVocabularyCount
+
+     FROM User u
+     WHERE u.user_id = ?`,
+    [userId],
+  );
+
+  return rows[0];
+};

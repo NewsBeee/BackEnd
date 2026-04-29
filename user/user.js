@@ -271,3 +271,45 @@ exports.updatemypage = async (req, res) => {
     });
   }
 };
+
+exports.stats = async (req, res) => {
+  const userId = req.session.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      timestamp: new Date().toISOString(),
+      success: false,
+      code: "USER_401",
+      message: "로그인이 필요합니다.",
+      result: null,
+    });
+  }
+
+  try {
+    const data = await userModel.findUserstats(userId);
+
+    return res.status(200).json({
+      timestamp: new Date().toISOString(),
+      success: true,
+      code: "USER_200",
+      message: "학습 데이터 조회에 성공했습니다.",
+      result: {
+        level: data.level,
+        articleCount: data.readArticleCount,
+        savedVocabularyCount: data.savedVocabularyCount,
+        understoodVocabularyCount: data.understoodVocabularyCount,
+        notUnderstoodVocabularyCount: data.notUnderstoodVocabularyCount,
+      },
+    });
+  } catch (err) {
+    logger.error(`학습 데이터 조회 오류: ${err.message}`, "user-service");
+
+    return res.status(500).json({
+      timestamp: new Date().toISOString(),
+      success: false,
+      code: "USER_500",
+      message: "학습 데이터 조회 실패",
+      result: null,
+    });
+  }
+};

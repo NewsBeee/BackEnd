@@ -7,7 +7,7 @@ router.post("/auth/login", user.login); //로그인
 router.post("/auth/logout", user.logout); //로그아웃
 router.delete("/auth/withdraw", user.deleteuser); //사용자 삭제
 router.get("/users/me", user.mypage); //마이페이지
-router.get("/users/me/stats", user.stats); //학습데이터
 router.patch("/users/me", user.updatemypage); //마이페이지
+router.get("/users/me/stats", user.stats); //학습데이터
 
 module.exports = router;
