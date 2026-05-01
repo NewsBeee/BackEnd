@@ -7,6 +7,7 @@ var db = mysql
     user: process.env.DB_USER, //admin
     password: process.env.DB_PASSWORD, //newsbee-01
     database: process.env.DB_NAME, //gachon-01
+    port: process.env.DB_PORT,
     multipleStatements: true,
   })
   .promise();
