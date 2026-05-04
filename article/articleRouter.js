@@ -3,10 +3,10 @@ const router = express.Router();
 const article = require("./article");
 
 router.get("/recommendations/articles", article.recommendations);
-
+router.get("/articles/guest/quota", article.getGuestQuota);
 router.post("/articles/transform", article.transform);
-router.post("/articles/transform/{articleId}/read", article.read);
-router.get("/articles", article.article);
-router.get("/articles/{articleId}", article.articlesdetail);
-router.get("/articles/guest/quota", article.guest);
+router.post("/articles/transform/{articleId}/read", article.readinglog);
+router.get("/articles", article.articlelist);
+router.get("/articles/{articleId}", article.articledetail);
+
 module.exports = router;
