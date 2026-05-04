@@ -1,5 +1,5 @@
-const userModel = require("../userModel");
-const logger = require("../../logs/logger");
+const userModel = require("./userModel");
+const logger = require("../logs/logger");
 
 const bcrypt = require("bcryptjs");
 
