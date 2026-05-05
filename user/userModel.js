@@ -3,7 +3,7 @@ const db = require("../db");
 //사용자 회원가입 시 사용자 추가
 exports.createUser = async (nickname, password, email) => {
   return await db.query(
-    "INSERT INTO user (nickname,passwd,email) VALUES (?, ?, ?)",
+    "INSERT INTO User (nickname,passwd,email) VALUES (?, ?, ?)",
     [nickname, password, email],
   );
 };
@@ -28,14 +28,14 @@ exports.viewUser = async () => {
 
 //사용자 삭제
 exports.deleteUser = async (id) => {
-  const [rows] = await db.query("DELETE from user where user_id=?", [id]); //사용자 삭제
+  const [rows] = await db.query("DELETE from User where user_id=?", [id]); //사용자 삭제
   return rows;
 };
 
 //닉네임 수정
 exports.updateUser = async () => {
   const [rows] = await db.query(
-    "UPDATE user SET nickname = ? WHERE user_id = ?",
+    "UPDATE User SET nickname = ? WHERE user_id = ?",
     [nickname, id],
   );
   return rows;
