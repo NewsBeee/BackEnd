@@ -1,29 +1,34 @@
-//임시 문제 1개
-//AI 연동 시 수정
-const onboardingQuestions = [
-  {
-    questionId: 1,
-    questionText: "‘타협’의 의미로 가장 적절한 것을 고르세요.",
-    choices: [
-      { choiceId: 1, choiceText: "한쪽이 일방적으로 따름" },
-      { choiceId: 2, choiceText: "서로 양보하여 의견을 맞춤" },
-      { choiceId: 3, choiceText: "완전히 반대함" },
-      { choiceId: 4, choiceText: "논의를 중단함" },
-    ],
-    answer: 2, //내부 채점용
-  },
-];
+const axios = require("axios");
+const db = require("../db");
+const AI_SERVER_URL = "http://localhost:8000";
 
-//프론트 전달 문제 목록
-exports.getQuestions = async () => {
-  return onboardingQuestions.map(({ questionId, questionText, choices }) => ({
-    questionId,
-    questionText,
-    choices,
-  }));
+// 온보딩 퀴즈 시작
+exports.startOnboardingQuiz = async (userId) => {
+  const response = await axios.post(`${AI_SERVER_URL}/api/quiz/start`, {
+    user_id: String(userId),
+    quiz_type: "onboarding",
+    current_grade: null,
+  });
+
+  return response.data;
 };
 
-//내부 채점용 원본 문제
-exports.getRawQuestions = async () => {
-  return onboardingQuestions;
+// 온보딩 답변 제출
+exports.submitOnboardingAnswer = async (sessionId, choiceId) => {
+  const response = await axios.post(`${AI_SERVER_URL}/api/quiz/answer`, {
+    session_id: sessionId,
+    choiceId,
+  });
+
+  return response.data;
+};
+
+// 온보딩 완료 후 사용자 레벨 업데이트
+exports.updateUserLevel = async (userId, level) => {
+  const [rows] = await db.query(
+    "UPDATE User SET level = ? WHERE user_id = ?",
+    [level, userId],
+  );
+
+  return rows;
 };

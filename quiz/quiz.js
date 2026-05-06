@@ -1,7 +1,7 @@
 const quizModel = require("./quizModel");
 const logger = require("../logs/logger");
 
-// 승급 퀴즈 문제 조회
+// 승급 퀴즈 시작
 exports.getPromotionQuestions = async (req, res) => {
   const userId = req.session?.user?.id;
 
@@ -38,7 +38,7 @@ exports.getPromotionQuestions = async (req, res) => {
       });
     }
 
-    const questions = await quizModel.getQuestions();
+    const aiResult = await quizModel.startPromotionQuiz(userId, user.level);
 
     return res.status(200).json({
       timestamp: new Date().toISOString(),
@@ -46,7 +46,8 @@ exports.getPromotionQuestions = async (req, res) => {
       code: "QUIZ_200",
       message: "승급 퀴즈 문항 조회에 성공했습니다.",
       result: {
-        questions,
+        sessionId: aiResult.session_id,
+        question: aiResult.first_item,
       },
     });
   } catch (err) {
@@ -55,11 +56,12 @@ exports.getPromotionQuestions = async (req, res) => {
       "quiz-service",
     );
 
-    return res.status(500).json({
+    return res.status(err.response?.status || 500).json({
       timestamp: new Date().toISOString(),
       success: false,
       code: "QUIZ_003",
-      message: "승급 퀴즈 문항 조회에 실패했습니다.",
+      message:
+        err.response?.data?.detail || "승급 퀴즈 문항 조회에 실패했습니다.",
       result: null,
     });
   }
@@ -68,7 +70,7 @@ exports.getPromotionQuestions = async (req, res) => {
 // 승급 퀴즈 답안 제출
 exports.submitPromotionQuiz = async (req, res) => {
   const userId = req.session?.user?.id;
-  const { answers } = req.body;
+  const { sessionId, choiceId } = req.body;
 
   if (!userId) {
     return res.status(401).json({
@@ -80,12 +82,12 @@ exports.submitPromotionQuiz = async (req, res) => {
     });
   }
 
-  if (!answers || !Array.isArray(answers)) {
+  if (!sessionId || choiceId === undefined || choiceId === null) {
     return res.status(400).json({
       timestamp: new Date().toISOString(),
       success: false,
       code: "QUIZ_001",
-      message: "답안 형식이 올바르지 않습니다.",
+      message: "sessionId, choiceId가 필요합니다.",
       result: null,
     });
   }
@@ -113,42 +115,41 @@ exports.submitPromotionQuiz = async (req, res) => {
       });
     }
 
-    const rawQuestions = await quizModel.getRawQuestions();
-
-    let score = 0;
-
-    for (const answer of answers) {
-      const targetQuestion = rawQuestions.find(
-        (q) => q.questionId === answer.questionId,
-      );
-
-      if (targetQuestion && targetQuestion.answer === answer.choiceId) {
-        score += 1;
-      }
-    }
+    const aiResult = await quizModel.submitPromotionAnswer(sessionId, choiceId);
 
     const previousLevel = user.level;
-    const passed = score >= 1;
-    const newLevel = passed ? previousLevel + 1 : previousLevel;
+    let newLevel = previousLevel;
+    let passed = null;
 
-    if (passed) {
-      await quizModel.updateUserLevel(userId, newLevel);
+    if (aiResult.completed && aiResult.result) {
+      passed = aiResult.result.promoted;
+
+      if (passed) {
+        newLevel = 
+          aiResult.result.assigned_grade !== undefined && 
+          aiResult.result.assigned_grade !== null 
+            ? aiResult.result.assigned_grade 
+            : previousLevel + 1;
+        await quizModel.updateUserLevel(userId, newLevel);
+      }
     }
-
-    logger.info(
-      `승급 퀴즈 제출 완료: user_id=${userId}, score=${score}, passed=${passed}, previousLevel=${previousLevel}, newLevel=${newLevel}`,
-      "quiz-service",
-    );
 
     return res.status(200).json({
       timestamp: new Date().toISOString(),
       success: true,
       code: "QUIZ_200",
-      message: "승급 퀴즈 채점이 완료되었습니다.",
+      message: aiResult.completed
+        ? "승급 퀴즈 채점이 완료되었습니다."
+        : "승급 퀴즈 답안이 제출되었습니다.",
       result: {
+        isCorrect: aiResult.is_correct,
+        questionNumber: aiResult.question_number,
+        completed: aiResult.completed,
+        nextQuestion: aiResult.next_item,
         passed,
         previousLevel,
         newLevel,
+        quizResult: aiResult.result,
       },
     });
   } catch (err) {
@@ -157,11 +158,12 @@ exports.submitPromotionQuiz = async (req, res) => {
       "quiz-service",
     );
 
-    return res.status(500).json({
+    return res.status(err.response?.status || 500).json({
       timestamp: new Date().toISOString(),
       success: false,
       code: "QUIZ_003",
-      message: "승급 퀴즈 제출에 실패했습니다.",
+      message:
+        err.response?.data?.detail || "승급 퀴즈 제출에 실패했습니다.",
       result: null,
     });
   }

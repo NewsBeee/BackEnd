@@ -1,39 +1,34 @@
+const axios = require("axios");
 const db = require("../db");
-
-//임시 문제 1개
-//AI 연동 시 수정
-const promotionQuestions = [
-  {
-    questionId: 11,
-    questionText: "‘타협’의 의미로 가장 적절한 것을 고르세요.",
-		choices: [
-			{ choiceId: 1, choiceText: "한쪽이 일방적으로 따름" },
-			{ choiceId: 2, choiceText: "서로 양보하여 의견을 맞춤" },
-			{ choiceId: 3, choiceText: "완전히 반대함" },
-			{ choiceId: 4, choiceText: "논의를 중단함" },
-		],
-    answer: 2, // 내부 채점용
-  },
-];
-
-//프론트 전달 문제 목록
-exports.getQuestions = async () => {
-  return promotionQuestions.map(({ questionId, questionText, choices }) => ({
-    questionId,
-    questionText,
-    choices,
-  }));
-};
-
-//내부 채점용 원본 문제
-exports.getRawQuestions = async () => {
-  return promotionQuestions;
-};
+const AI_SERVER_URL = "http://localhost:8000";
 
 // 사용자 정보 조회
 exports.findUserById = async (userId) => {
-  const [rows] = await db.query("SELECT * FROM User WHERE user_id = ?", [userId]);
+  const [rows] = await db.query("SELECT * FROM User WHERE user_id = ?", [
+    userId,
+  ]);
   return rows[0];
+};
+
+// 승급 퀴즈 시작
+exports.startPromotionQuiz = async (userId, currentGrade) => {
+  const response = await axios.post(`${AI_SERVER_URL}/api/quiz/start`, {
+    user_id: String(userId),
+    quiz_type: "upgrade",
+    current_grade: currentGrade,
+  });
+
+  return response.data;
+};
+
+// 승급 퀴즈 답변 제출
+exports.submitPromotionAnswer = async (sessionId, choiceId) => {
+  const response = await axios.post(`${AI_SERVER_URL}/api/quiz/answer`, {
+    session_id: sessionId,
+    choiceId,
+  });
+
+  return response.data;
 };
 
 // 사용자 레벨 업데이트
@@ -42,5 +37,6 @@ exports.updateUserLevel = async (userId, level) => {
     "UPDATE User SET level = ? WHERE user_id = ?",
     [level, userId],
   );
+
   return rows;
 };

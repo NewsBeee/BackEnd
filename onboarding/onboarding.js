@@ -1,10 +1,22 @@
 const onboardingModel = require("./onboardingModel");
 const logger = require("../logs/logger");
 
-//온보딩 문제 조회
+// 온보딩 퀴즈 시작
 exports.getQuestions = async (req, res) => {
+  const userId = req.session?.user?.id || req.query.userId;
+
+  if (!userId) {
+    return res.status(400).json({
+      timestamp: new Date().toISOString(),
+      success: false,
+      code: "ONBOARDING_001",
+      message: "userId가 필요합니다.",
+      result: null,
+    });
+  }
+
   try {
-    const questions = await onboardingModel.getQuestions();
+    const aiResult = await onboardingModel.startOnboardingQuiz(userId);
 
     return res.status(200).json({
       timestamp: new Date().toISOString(),
@@ -12,7 +24,8 @@ exports.getQuestions = async (req, res) => {
       code: "ONBOARDING_200",
       message: "온보딩 문항 조회에 성공했습니다.",
       result: {
-        questions,
+        sessionId: aiResult.session_id,
+        question: aiResult.first_item,
       },
     });
   } catch (err) {
@@ -21,71 +34,78 @@ exports.getQuestions = async (req, res) => {
       "onboarding-service",
     );
 
-    return res.status(500).json({
+    return res.status(err.response?.status || 500).json({
       timestamp: new Date().toISOString(),
       success: false,
       code: "ONBOARDING_003",
-      message: "온보딩 문항 조회에 실패했습니다.",
+      message:
+        err.response?.data?.detail || "온보딩 문항 조회에 실패했습니다.",
       result: null,
     });
   }
 };
 
-//온보딩 답안 제출
+// 온보딩 답안 제출
 exports.submitAnswers = async (req, res) => {
-  const { answers } = req.body;
+  const userId = req.session?.user?.id || req.body.userId;
+  const { sessionId, choiceId } = req.body;
 
-  if (!answers || !Array.isArray(answers)) {
+  if (!userId || !sessionId || choiceId === undefined || choiceId === null) {
     return res.status(400).json({
       timestamp: new Date().toISOString(),
       success: false,
       code: "ONBOARDING_001",
-      message: "답안 형식이 올바르지 않습니다.",
+      message: "userId, sessionId, choiceId가 필요합니다.",
       result: null,
     });
   }
 
   try {
-    const rawQuestions = await onboardingModel.getRawQuestions();
+    const aiResult = await onboardingModel.submitOnboardingAnswer(
+      sessionId,
+      choiceId,
+    );
 
-    let score = 0;
+    let level = null;
 
-    for (const answer of answers) {
-      const targetQuestion = rawQuestions.find(
-        (q) => q.questionId === answer.questionId,
-      );
-
-      if (targetQuestion && targetQuestion.answer === answer.choiceId) {
-        score += 1;
-      }
+    if ( 
+      aiResult.completed && 
+      aiResult.result && 
+      aiResult.result.assigned_grade !== undefined && 
+      aiResult.result.assigned_grade !== null
+    ) {
+      level = aiResult.result.assigned_grade;
+      await onboardingModel.updateUserLevel(userId, level);
     }
-
-    //임시 레벨 계산
-    //AI 연동 시 수정
-    let level = 2;
-    if (score <= 0) level = 1;
-    if (score >= 1) level = 2;
 
     return res.status(200).json({
       timestamp: new Date().toISOString(),
       success: true,
       code: "ONBOARDING_200",
-      message: "초기 어휘 레벨 측정이 완료되었습니다.",
+      message: aiResult.completed
+        ? "초기 어휘 레벨 측정이 완료되었습니다."
+        : "온보딩 답안이 제출되었습니다.",
       result: {
+        isCorrect: aiResult.is_correct,
+        questionNumber: aiResult.question_number,
+        completed: aiResult.completed,
+        nextQuestion: aiResult.next_item,
         level,
+        quizResult: aiResult.result,
       },
     });
   } catch (err) {
     logger.error(
-      `온보딩 제출 실패 - [ERROR_CODE:702] - ${err.message}`,
+      `온보딩 제출 실패 - [ERROR_CODE:003] - ${err.message}`,
       "onboarding-service",
     );
 
-    return res.status(500).json({
+    return res.status(err.response?.status || 500).json({
       timestamp: new Date().toISOString(),
       success: false,
-      code: "ONBOARDING_702",
-      message: "온보딩 답안 제출에 실패했습니다.",
+      code: "ONBOARDING_003",
+      message:
+        err.response?.data?.detail || "온보딩 답안 제출에 실패했습니다.",
       result: null,
     });
   }
