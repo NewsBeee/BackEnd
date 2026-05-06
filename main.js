@@ -1,13 +1,15 @@
 const express = require("express");
 const cors = require("cors");
+const session = require("express-session");
 require("dotenv").config();
-const db= require('./db'); 
+const db = require('./db'); 
 
 const userRouter = require("./user/userRouter");
 const onboardingRouter = require("./onboarding/onboardingRouter");
 const quizRouter = require("./quiz/quizRouter");
 const challengeRouter = require("./challenge/challengeRouter");
 const vocaRouter = require("./voca/vocaRouter");
+const articleRouter = require("./article/articleRouter");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -24,6 +26,19 @@ app.use(
 // JSON 요청 파싱
 app.use(express.json());
 
+// 세션 설정
+app.use(
+  session({
+    secret: "newsbee-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false,
+    },
+  }),
+);
+ 
 //기본 라우트
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -37,6 +52,7 @@ app.use("/newsbee", onboardingRouter);
 app.use("/newsbee", quizRouter);
 app.use("/newsbee", challengeRouter);
 app.use("/newsbee", vocaRouter);
+app.use("/newsbee", articleRouter);
 
 // 404 처리
 app.use((req, res, next) => {
