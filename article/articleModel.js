@@ -5,11 +5,11 @@ exports.findHistories = async (userId) => {
     `SELECT
         a.article_id,
         a.link,
+        a.title,
         a.category,
         a.keywords,
-        a.summary,
         a.embedding,
-        r.read_date
+        r.read_date AS read_at
      FROM Reading_log r
      JOIN Article a
        ON r.article_id = a.article_id
@@ -22,33 +22,82 @@ exports.findHistories = async (userId) => {
 
   return rows;
 };
-exports.saveArticle = async (
+exports.findRecentRecommendations = async (userId) => {
+  const [rows] = await db.query(
+    `
+    SELECT *
+    FROM user_recommendations
+    WHERE user_id = ?
+      AND created_at >= NOW() - INTERVAL 6 HOUR
+    ORDER BY rank_order ASC
+    `,
+    [userId],
+  );
+
+  return rows;
+};
+exports.deleteOldRecommendations = async (userId) => {
+  await db.query(`DELETE FROM user_recommendations WHERE user_id = ?`, [
+    userId,
+  ]);
+};
+exports.saveRecommendations = async (userId, recommendations) => {
+  for (let i = 0; i < recommendations.length; i++) {
+    const article = recommendations[i];
+
+    await db.query(
+      `
+      INSERT INTO user_recommendations
+      (
+        user_id,
+        rank_order,
+        title,
+        link,
+        summary,
+        similarity_score,
+        published_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        userId,
+        i + 1,
+        article.title,
+        article.link,
+        article.summary,
+        article.similarity_score,
+        article.published_at,
+      ],
+    );
+  }
+};
+exports.saveArticle = async ({
   userId,
+  title,
   link,
   convertArticle,
   summary,
   keywords,
   embedding,
-) => {
+}) => {
   const [result] = await db.query(
     `
-    INSERT INTO Article
-      (user_id, link, convert_article, summary, keywords, embedding, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, NOW())
+    INSERT INTO article
+    (
+      user_id,
+      title,
+      link,
+      convert_article,
+      summary,
+      keywords,
+      embedding
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
-    [userId, link, convertArticle, summary, keywords, embedding],
+    [userId, title, link, convertArticle, summary, keywords, embedding],
   );
 
   return result.insertId;
-};
-exports.saveLog = async (userId, articleId) => {
-  await db.query(
-    `
-    INSERT INTO reading_log (user_id, article_id, read_date)
-    VALUES (?, ?, NOW())
-`,
-    [userId, articleId],
-  );
 };
 exports.saveVoca = async (userId, articleId, vocabulary) => {
   if (!Array.isArray(vocabulary) || vocabulary.length === 0) return;
@@ -69,7 +118,7 @@ exports.getArticlesByUserId = async (userId) => {
     SELECT 
       article_id AS articleId,
       link,
-      summary,
+      title,
       created_at AS createdAt
     FROM Article
     WHERE user_id = ?
