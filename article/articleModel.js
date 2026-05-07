@@ -99,16 +99,29 @@ exports.saveArticle = async ({
 
   return result.insertId;
 };
-exports.saveVoca = async (userId, articleId, vocabulary) => {
-  if (!Array.isArray(vocabulary) || vocabulary.length === 0) return;
-
-  for (const item of vocabulary) {
+exports.saveVoca = async (userId, articleId, vocabularies) => {
+  for (const vocab of vocabularies) {
     await db.query(
-      `INSERT INTO Voca (user_id, article_id, word, meaning)
-       VALUES (?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         meaning = VALUES(meaning)`,
-      [userId, articleId, item.word, item.meaning],
+      `
+      INSERT INTO vocabulary
+      (
+        user_id,
+        article_id,
+        word,
+        level,
+        meaning,
+        sentence_index
+      )
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [
+        userId,
+        articleId,
+        vocab.word,
+        vocab.level,
+        vocab.meaning,
+        vocab.sentence_index,
+      ],
     );
   }
 };

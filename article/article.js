@@ -19,9 +19,9 @@ exports.recommendations = async (req, res) => {
     }
 
     // 1. 캐시 먼저 확인
-    const cached = await recommendModel.findRecommendations(userId);
+    const cached = await articleModel.findRecommendations(userId);
 
-    if (cached.length > 0) {
+    if (cached && cached.length > 0) {
       return res.status(200).json({
         timestamp: new Date().toISOString(),
         success: true,
@@ -35,7 +35,7 @@ exports.recommendations = async (req, res) => {
     }
 
     // 2. 캐시 없을 때만 읽기 기록 조회
-    const histories = await articleModel.findHistories(userId);
+    const histories = await articleModel.findHistories(userId); //20개 가져오기
     //요청
     const aiResponse = await axios.post(
       "http://{AI서버주소}:8001/api/recommend/",
@@ -50,8 +50,11 @@ exports.recommendations = async (req, res) => {
     const recommendations = aiData.recommendations || [];
 
     // 3. 추천 결과 저장
-    await recommendModel.deleteOldRecommendations(userId);
-    await recommendModel.saveRecommendations(userId, recommendations);
+    await articleModel.deleteOldRecommendations(userId);
+
+    if (recommendations.length > 0) {
+      await articleModel.saveRecommendations(userId, recommendations);
+    }
     //프론트 응답
     return res.status(200).json({
       timestamp: aiData.timestamp || new Date().toISOString(),
@@ -76,7 +79,7 @@ exports.recommendations = async (req, res) => {
   }
 };
 
-const GUEST_LIMIT = 5;
+const GUEST_LIMIT = 5; //제한 횟수 설정
 
 exports.getGuestQuota = async (req, res) => {
   const userId = req.session.user?.id;
@@ -166,36 +169,48 @@ exports.transform = async (req, res) => {
         });
       }
     }
+    //제목 파싱
+    let title = "";
+    try {
+      title = await parseTitle(link);
+    } catch (err) {
+      title = "";
+    }
+
+    //레벨 지정
+    const targetLevel = userLevel || 3;
 
     // AI 요청
     const aiResponse = await axios.post(
       "http://{AI서버주소}:8001/api/convert/process",
       {
-        userId: userId || null,
-        target_level: userLevel,
-        link,
+        url: link,
+        target_level: targetLevel,
+        min_word_level: targetLevel + 1,
       },
     );
 
     const aiData = aiResponse.data;
-    const convertArticle = aiData?.result?.convertArticle || "";
-    const summary = aiData?.result?.summary || "";
-    const keywords = aiData?.result?.keywords || [];
-    const vocabulary = aiData?.result?.vocabulary || [];
+    const convertArticle = aiData.rewritten || "";
+    const summary = aiData.summary || "";
+    const keywords = aiData.keywords || [];
+    const vocabulary = aiData.tagged_words || [];
     let articleId = null; //비회원의 경우 null 반환
+
     //회원은 기사 읽기 기록을 db에 저장
     if (userId) {
       articleId = await articleModel.saveArticle({
         userId,
-        link: aiData?.result?.link || link,
+        title,
+        link,
         convertArticle,
         summary,
         keywords: JSON.stringify(keywords),
-        embedding: aiData?.result?.embedding || null,
+        embedding: aiData.embedding || null,
       });
+
       await articleModel.saveVoca(userId, articleId, vocabulary);
     }
-
     //비회원 횟수 차감
     if (!userId) {
       req.session.guestCount -= 1;
@@ -209,7 +224,7 @@ exports.transform = async (req, res) => {
       message: "기사 변환이 완료되었습니다.",
       result: {
         articleId, // 회원이면 값, 비회원이면 null
-        link: aiData?.result?.link || link,
+        link,
         convertArticle,
         summary,
         vocabulary,
