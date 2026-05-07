@@ -1,6 +1,7 @@
 const articleModel = require("./articleModel");
 const logger = require("../logs/logger");
 const axios = require("axios");
+const cheerio = require("cheerio");
 
 exports.recommendations = async (req, res) => {
   const level = req.session.user?.level;
