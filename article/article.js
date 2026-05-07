@@ -11,34 +11,55 @@ exports.recommendations = async (req, res) => {
       return res.status(401).json({
         timestamp: new Date().toISOString(),
         success: false,
-        code: "RECOMMEND_302",
+        code: "RECOMMEND_401",
         message: "로그인이 필요합니다.",
         result: null,
       });
     }
-    const findHistories = await articleModel.findHistories(userId);
 
-    const aiResponse = await axios.post("http://기사추천", {
-      userId,
-      level,
-      findHistories,
-    });
+    // 1. 캐시 먼저 확인
+    const cached = await recommendModel.findRecommendations(userId);
 
-    const aiData = aiResponse.data;
+    if (cached.length > 0) {
+      return res.status(200).json({
+        timestamp: new Date().toISOString(),
+        success: true,
+        code: "RECOMMEND_200",
+        message: "추천 기사 조회에 성공했습니다.",
+        result: {
+          articles: cached,
+          cached: true,
+        },
+      });
+    }
 
-    logger.info(
-      `추천 기사 조회 성공: user=${userId}, level=${level}`,
-      "recommend-service",
+    // 2. 캐시 없을 때만 읽기 기록 조회
+    const histories = await articleModel.findHistories(userId);
+    //요청
+    const aiResponse = await axios.post(
+      "http://{AI서버주소}:8001/api/recommend/",
+      {
+        user_id: userId,
+        level,
+        history: histories || [],
+      },
     );
+    // 응답
+    const aiData = aiResponse.data;
+    const recommendations = aiData.recommendations || [];
 
-    // 3. 최종 응답 포맷 변환
+    // 3. 추천 결과 저장
+    await recommendModel.deleteOldRecommendations(userId);
+    await recommendModel.saveRecommendations(userId, recommendations);
+    //프론트 응답
     return res.status(200).json({
       timestamp: aiData.timestamp || new Date().toISOString(),
       success: true,
       code: "RECOMMEND_200",
       message: "추천 기사 조회에 성공했습니다.",
       result: {
-        articles: aiData?.result?.articles || [],
+        articles: recommendations,
+        cached: false,
       },
     });
   } catch (err) {
@@ -91,9 +112,26 @@ exports.getGuestQuota = async (req, res) => {
     },
   });
 };
+//파싱 함수
+async function parseTitle(link) {
+  const response = await axios.get(link, {
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+    },
+  });
+
+  const $ = cheerio.load(response.data);
+
+  return (
+    $('meta[property="og:title"]').attr("content") ||
+    $('meta[name="title"]').attr("content") ||
+    $("title").text()
+  )?.trim();
+}
 
 exports.transform = async (req, res) => {
   const userId = req.session.user?.id;
+  const userLevel = req.session.user?.level;
   const { link } = req.body;
 
   try {
@@ -129,10 +167,14 @@ exports.transform = async (req, res) => {
     }
 
     // AI 요청
-    const aiResponse = await axios.post("http://기사변환", {
-      userId: userId || null,
-      link,
-    });
+    const aiResponse = await axios.post(
+      "http://{AI서버주소}:8001/api/convert/process",
+      {
+        userId: userId || null,
+        target_level: userLevel,
+        link,
+      },
+    );
 
     const aiData = aiResponse.data;
     const convertArticle = aiData?.result?.convertArticle || "";
