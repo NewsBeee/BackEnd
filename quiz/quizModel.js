@@ -1,6 +1,6 @@
 const axios = require("axios");
 const db = require("../db");
-const AI_SERVER_URL = "http://localhost:8000";
+const AI_SERVER_URL = process.env.AI_SERVER_URL;
 
 // 사용자 정보 조회
 exports.findUserById = async (userId) => {

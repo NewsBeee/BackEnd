@@ -1,6 +1,6 @@
 const axios = require("axios");
 const db = require("../db");
-const AI_SERVER_URL = "http://localhost:8000";
+const AI_SERVER_URL = process.env.AI_SERVER_URL;
 
 // 온보딩 퀴즈 시작
 exports.startOnboardingQuiz = async (userId) => {
