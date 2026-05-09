@@ -2,6 +2,7 @@ const articleModel = require("./articleModel");
 const logger = require("../logs/logger");
 const axios = require("axios");
 const cheerio = require("cheerio");
+const AI_SERVER_URL = process.env.AI_SERVER_URL;
 
 exports.recommendations = async (req, res) => {
   const level = req.session.user?.level;
@@ -37,14 +38,11 @@ exports.recommendations = async (req, res) => {
     // 2. 캐시 없을 때만 읽기 기록 조회
     const histories = await articleModel.findHistories(userId); //20개 가져오기
     //요청
-    const aiResponse = await axios.post(
-      "http://{AI서버주소}:8001/api/recommend/",
-      {
-        user_id: userId,
-        level,
-        history: histories || [],
-      },
-    );
+    const aiResponse = await axios.post(`${AI_SERVER_URL}//api/recommend/`, {
+      user_id: userId,
+      level,
+      history: histories || [],
+    });
     // 응답
     const aiData = aiResponse.data;
     const recommendations = aiData.recommendations || [];
@@ -182,7 +180,7 @@ exports.transform = async (req, res) => {
 
     // AI 요청
     const aiResponse = await axios.post(
-      "http://{AI서버주소}:8001/api/convert/process",
+      `${AI_SERVER_URL}/api/convert/process`,
       {
         url: link,
         target_level: targetLevel,
