@@ -33,10 +33,10 @@ exports.deleteUser = async (id) => {
 };
 
 //닉네임 수정
-exports.updateUser = async () => {
+exports.updateUser = (nickname, userId) => {
   const [rows] = await db.query(
     "UPDATE User SET nickname = ? WHERE user_id = ?",
-    [nickname, id],
+    [nickname, userId],
   );
   return rows;
 };
