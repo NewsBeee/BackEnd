@@ -33,7 +33,7 @@ exports.deleteUser = async (id) => {
 };
 
 //닉네임 수정
-exports.updateUser = (nickname, userId) => {
+exports.updateUser = async (nickname, userId) => {
   const [rows] = await db.query(
     "UPDATE User SET nickname = ? WHERE user_id = ?",
     [nickname, userId],
