@@ -22,7 +22,7 @@ exports.findHistories = async (userId) => {
 
   return rows;
 };
-exports.findRecentRecommendations = async (userId) => {
+exports.findRecommendations = async (userId) => {
   const [rows] = await db.query(
     `
     SELECT *
