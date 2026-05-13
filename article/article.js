@@ -38,7 +38,7 @@ exports.recommendations = async (req, res) => {
     // 2. 캐시 없을 때만 읽기 기록 조회
     const histories = await articleModel.findHistories(userId); //20개 가져오기
     //요청
-    const aiResponse = await axios.post(`${AI_SERVER_URL}//api/recommend/`, {
+    const aiResponse = await axios.post(`${AI_SERVER_URL}/api/recommend/`, {
       user_id: userId,
       level,
       history: histories || [],
@@ -134,7 +134,7 @@ async function parseTitle(link) {
 exports.transform = async (req, res) => {
   const userId = req.session.user?.id;
   const userLevel = req.session.user?.level;
-  const { link } = req.body;
+  const { link, summarize_count } = req.body;
 
   try {
     if (!link) {
@@ -189,11 +189,29 @@ exports.transform = async (req, res) => {
     );
 
     const aiData = aiResponse.data;
+    const originalArticle = aiData.original || "";
     const convertArticle = aiData.rewritten || "";
-    const summary = aiData.summary || "";
     const keywords = aiData.keywords || [];
     const vocabulary = aiData.tagged_words || [];
     let articleId = null; //비회원의 경우 null 반환
+    if (!originalArticle) {
+      return res.status(500).json({
+        timestamp: new Date().toISOString(),
+        success: false,
+        code: "ARTICLE_500",
+        message: "AI 서버에서 원문을 가져오지 못했습니다.",
+        result: null,
+      });
+    }
+    const aiSummary = await axios.post(
+      `${AI_SERVER_URL}/api/convert/summarize`,
+      {
+        text: originalArticle,
+        target_level: targetLevel,
+        max_sentences: summarize_count || 5,
+      },
+    );
+    const summary = aiSummary.data;
 
     //회원은 기사 읽기 기록을 db에 저장
     if (userId) {
