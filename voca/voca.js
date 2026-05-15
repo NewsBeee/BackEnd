@@ -114,8 +114,11 @@ exports.getVocabularyList = async (req, res) => {
   }
 
   try {
-    const limit = Number(size);
-    const offset = (Number(page) - 1) * Number(size);
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const sizeNum = Math.max(Number(size) || 20, 1);
+
+    const limit = sizeNum;
+    const offset = (pageNum - 1) * sizeNum;
 
     const rows = await vocaModel.getVocabularyList(userId, status, limit, offset);
 
