@@ -134,7 +134,7 @@ async function parseTitle(link) {
 exports.transform = async (req, res) => {
   const userId = req.session.user?.id;
   const userLevel = req.session.user?.level;
-  const { link, summarize_count } = req.body;
+  const { link, summary_count } = req.body;
 
   try {
     if (!link) {
@@ -208,7 +208,7 @@ exports.transform = async (req, res) => {
       {
         text: originalArticle,
         target_level: targetLevel,
-        max_sentences: summarize_count || 5,
+        max_sentences: summary_count || 5,
       },
     );
     const summary = aiSummary.data;
