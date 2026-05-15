@@ -1,0 +1,11 @@
+[2026-05-11T15:09:14.939Z] [article-service] [ERROR] 기사 변환 오류: 
+[2026-05-11T15:10:04.890Z] [auth-service] [INFO] 회원가입 성공: parkjinhee0318@gachon.ac.kr
+[2026-05-11T15:10:34.423Z] [auth-service] [INFO] 로그인 성공: parkjinhee0318@gachon.ac.kr
+[2026-05-11T15:10:34.493Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:10:34.502Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:10:38.621Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:10:38.629Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:11:04.421Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:11:04.430Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:11:42.934Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function
+[2026-05-11T15:11:42.945Z] [recommend-service] [ERROR] 추천 기사 조회 오류: articleModel.findRecommendations is not a function

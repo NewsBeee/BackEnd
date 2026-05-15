@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 8080;
 // CORS 설정 (프론트 연결용)
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+    origin: ["http://localhost:3000", "http://127.0.0.1:3000", "http://13.124.66.238:3000"],
     credentials: true,
   }),
 );
