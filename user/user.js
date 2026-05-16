@@ -11,7 +11,7 @@ exports.signup = async (req, res) => {
     await userModel.createUser(nickname, hashed, email);
     const user = await userModel.findUser(email);
     req.session.user = {
-      userId: user.user_id,
+      id: user.user_id,
       email: user.email,
       nickname: user.nickname,
       level: user.level,
