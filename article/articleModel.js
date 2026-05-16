@@ -116,6 +116,15 @@ exports.saveVoca = async (userId, articleId, vocabularies) => {
     );
   }
 };
+exports.saveLog = async (userId, articleId) => {
+  await db.query(
+    `
+    INSERT INTO Reading_log (user_id, article_id, read_date)
+    VALUES (?, ?, NOW())
+  `,
+    [userId, articleId],
+  );
+};
 exports.getArticlesByUserId = async (userId) => {
   const [rows] = await db.query(
     `
