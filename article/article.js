@@ -168,25 +168,19 @@ exports.transform = async (req, res) => {
       }
     }
     //제목 파싱
-    let title = "";
-    try {
-      title = await parseTitle(link);
-    } catch (err) {
-      title = "";
-    }
+    const titlePromise = parseTitle(link).catch(() => "");
 
     //레벨 지정
     const targetLevel = userLevel || 3;
 
     // AI 요청
-    const aiResponse = await axios.post(
-      `${AI_SERVER_URL}/api/convert/process`,
-      {
-        url: link,
-        target_level: targetLevel,
-        min_word_level: targetLevel + 1,
-      },
-    );
+    const aiPromise = axios.post(`${AI_SERVER_URL}/api/convert/process`, {
+      url: link,
+      target_level: targetLevel,
+      min_word_level: targetLevel + 1,
+    });
+
+    const [title, aiResponse] = await Promise.all([titlePromise, aiPromise]);
 
     const aiData = aiResponse.data;
     const originalArticle = aiData.original || "";
@@ -211,7 +205,7 @@ exports.transform = async (req, res) => {
         max_sentences: summary_count || 5,
       },
     );
-    const summary = aiSummary.data;
+    const summary = aiSummary.data.data || "";
 
     //회원은 기사 읽기 기록을 db에 저장
     if (userId) {
