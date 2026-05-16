@@ -128,18 +128,18 @@ exports.saveLog = async (userId, articleId) => {
 exports.getArticlesByUserId = async (userId) => {
   const [rows] = await db.query(
     `
-    SELECT 
-      article_id AS articleId,
-      link,
-      title,
-      created_at AS createdAt
-    FROM Article
-    WHERE user_id = ?
-    ORDER BY created_at DESC
-    `,
+  SELECT 
+    a.article_id AS articleId,
+    a.link,
+    a.title,
+    rl.read_date AS createdAt
+  FROM Reading_log rl
+  JOIN Article a ON rl.article_id = a.article_id
+  WHERE rl.user_id = ?
+  ORDER BY rl.read_date DESC
+  `,
     [userId],
   );
-
   return rows;
 };
 exports.getArticleDetail = async (userId, articleId) => {
