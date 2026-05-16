@@ -34,10 +34,10 @@ exports.signup = async (req, res) => {
         success: true,
         code: "AUTH_201",
         message: "회원가입이 완료되었습니다.",
-        onboardingCompleted: !!user.onboarding_completed,
         result: {
           userId: user.user_id,
           level: user.level,
+          onboardingCompleted: !!user.onboarding_completed,
         },
       });
     });
@@ -110,11 +110,11 @@ exports.login = async (req, res) => {
       success: true,
       code: "AUTH_200",
       message: "로그인에 성공했습니다.",
-      onboardingCompleted: !!user.onboarding_completed,
       result: {
         userId: user.user_id,
         nickname: user.nickname,
         level: user.level,
+        onboardingCompleted: !!user.onboarding_completed,
       },
     });
   } catch (err) {
@@ -228,12 +228,12 @@ exports.mypage = async (req, res) => {
       success: true,
       code: "USER_200",
       message: "사용자 프로필 조회에 성공했습니다.",
-      onboardingCompleted: !!user.onboarding_completed,
       result: {
         userId: user.user_id,
         email: user.email,
         nickname: user.nickname,
         level: user.level,
+        onboardingCompleted: !!user.onboarding_completed,
       },
     });
   } catch (err) {
@@ -281,8 +281,7 @@ exports.updatemypage = async (req, res) => {
       success: true,
       code: "USER_200",
       message: "닉네임이 수정되었습니다.",
-      onboardingCompleted: !!user.onboarding_completed,
-      result: { nickname },
+      result: { nickname, onboardingCompleted: !!user.onboarding_completed },
     });
   } catch (err) {
     logger.error(`닉네임 수정 오류: ${err.message}`, "auth-service");
@@ -318,13 +317,13 @@ exports.stats = async (req, res) => {
       success: true,
       code: "USER_200",
       message: "학습 데이터 조회에 성공했습니다.",
-      onboardingCompleted: !!user.onboarding_completed,
       result: {
         level: data.level,
         articleCount: data.readArticleCount,
         savedVocabularyCount: data.savedVocabularyCount,
         understoodVocabularyCount: data.understoodVocabularyCount,
         notUnderstoodVocabularyCount: data.notUnderstoodVocabularyCount,
+        onboardingCompleted: !!user.onboarding_completed,
       },
     });
   } catch (err) {
