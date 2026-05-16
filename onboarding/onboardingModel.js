@@ -26,7 +26,9 @@ exports.submitOnboardingAnswer = async (sessionId, choiceId) => {
 // 온보딩 완료 후 사용자 레벨 업데이트
 exports.updateUserLevel = async (userId, level) => {
   const [rows] = await db.query(
-    "UPDATE User SET level = ? WHERE user_id = ?",
+    `UPDATE User
+     SET level = ?, onboarding_completed = true
+     WHERE user_id = ?`,
     [level, userId],
   );
 
