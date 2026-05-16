@@ -103,25 +103,17 @@ exports.saveVoca = async (userId, articleId, vocabularies) => {
   for (const vocab of vocabularies) {
     await db.query(
       `
-      INSERT INTO vocabulary
+      INSERT INTO Voca
       (
         user_id,
         article_id,
         word,
-        level,
         meaning,
         sentence_index
       )
       VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [
-        userId,
-        articleId,
-        vocab.word,
-        vocab.level,
-        vocab.meaning,
-        vocab.sentence_index,
-      ],
+      [userId, articleId, vocab.word, vocab.meaning, vocab.sentence_index],
     );
   }
 };
@@ -150,7 +142,7 @@ exports.getArticleDetail = async (userId, articleId) => {
       link,
       convert_article AS convertArticle,
       summary,
-      keywords AS vocabulary,
+      keywords AS Voca,
       DATE_FORMAT(created_at, '%Y-%m-%d') AS createdAt
     FROM Article
     WHERE user_id = ? AND article_id = ?
