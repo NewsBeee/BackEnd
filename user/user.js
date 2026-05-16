@@ -10,16 +10,35 @@ exports.signup = async (req, res) => {
     const hashed = await bcrypt.hash(password, 10); //비밀번호
     await userModel.createUser(nickname, hashed, email);
     const user = await userModel.findUser(email);
-    logger.info(`회원가입 성공: ${email}`, "auth-service");
-    return res.status(201).json({
-      timestamp: new Date().toISOString(),
-      success: true,
-      code: "AUTH_201",
-      message: "회원가입이 완료되었습니다.",
-      result: {
-        userId: user.user_id,
-        level: user.level,
-      },
+    req.session.user = {
+      userId: user.user_id,
+      email: user.email,
+      nickname: user.nickname,
+      level: user.level,
+    };
+    req.session.save((err) => {
+      if (err) {
+        logger.error(`세션 저장 실패: ${err.message}`, "auth-service");
+
+        return res.status(500).json({
+          timestamp: new Date().toISOString(),
+          success: false,
+          code: "AUTH_500",
+          message: "세션 저장 실패",
+        });
+      }
+
+      logger.info(`회원가입 성공: ${email}`, "auth-service");
+      return res.status(201).json({
+        timestamp: new Date().toISOString(),
+        success: true,
+        code: "AUTH_201",
+        message: "회원가입이 완료되었습니다.",
+        result: {
+          userId: user.user_id,
+          level: user.level,
+        },
+      });
     });
   } catch (err) {
     if (err.code === "ER_DUP_ENTRY") {
