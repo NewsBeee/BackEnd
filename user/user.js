@@ -34,6 +34,7 @@ exports.signup = async (req, res) => {
         success: true,
         code: "AUTH_201",
         message: "회원가입이 완료되었습니다.",
+        onboardingCompleted: !!user.onboarding_completed,
         result: {
           userId: user.user_id,
           level: user.level,
@@ -109,6 +110,7 @@ exports.login = async (req, res) => {
       success: true,
       code: "AUTH_200",
       message: "로그인에 성공했습니다.",
+      onboardingCompleted: !!user.onboarding_completed,
       result: {
         userId: user.user_id,
         nickname: user.nickname,
@@ -226,6 +228,7 @@ exports.mypage = async (req, res) => {
       success: true,
       code: "USER_200",
       message: "사용자 프로필 조회에 성공했습니다.",
+      onboardingCompleted: !!user.onboarding_completed,
       result: {
         userId: user.user_id,
         email: user.email,
@@ -245,6 +248,7 @@ exports.mypage = async (req, res) => {
   }
 };
 exports.updatemypage = async (req, res) => {
+  const user = await userModel.findUserbyId(userId);
   const userId = req.session.user?.id;
   if (!userId) {
     return res.status(401).json({
@@ -277,6 +281,7 @@ exports.updatemypage = async (req, res) => {
       success: true,
       code: "USER_200",
       message: "닉네임이 수정되었습니다.",
+      onboardingCompleted: !!user.onboarding_completed,
       result: { nickname },
     });
   } catch (err) {
@@ -305,6 +310,7 @@ exports.stats = async (req, res) => {
   }
 
   try {
+    const user = await userModel.findUserbyId(userId);
     const data = await userModel.findUserstats(userId);
 
     return res.status(200).json({
@@ -312,6 +318,7 @@ exports.stats = async (req, res) => {
       success: true,
       code: "USER_200",
       message: "학습 데이터 조회에 성공했습니다.",
+      onboardingCompleted: !!user.onboarding_completed,
       result: {
         level: data.level,
         articleCount: data.readArticleCount,
