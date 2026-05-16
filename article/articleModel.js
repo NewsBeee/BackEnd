@@ -93,6 +93,14 @@ exports.saveArticle = async ({
       embedding
     )
     VALUES (?, ?, ?, ?, ?, ?, ?)
+
+    ON DUPLICATE KEY UPDATE
+      title = VALUES(title),
+      convert_article = VALUES(convert_article),
+      summary = VALUES(summary),
+      keywords = VALUES(keywords),
+      embedding = VALUES(embedding),
+      created_at = CURRENT_TIMESTAMP
     `,
     [userId, title, link, convertArticle, summary, keywords, embedding],
   );
