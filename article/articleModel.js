@@ -111,7 +111,7 @@ exports.saveVoca = async (userId, articleId, vocabularies) => {
         meaning,
         sentence_index
       )
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?)
       `,
       [userId, articleId, vocab.word, vocab.meaning, vocab.sentence_index],
     );
