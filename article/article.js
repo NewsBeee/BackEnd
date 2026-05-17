@@ -187,7 +187,7 @@ exports.transform = async (req, res) => {
     const convertArticle = aiData.rewritten || "";
     const keywords = aiData.keywords || [];
     const vocabulary = aiData.tagged_words || [];
-    console.log(vocabulary);
+
     let articleId = null; //비회원의 경우 null 반환
     if (!originalArticle) {
       return res.status(500).json({
