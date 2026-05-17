@@ -187,6 +187,7 @@ exports.transform = async (req, res) => {
     const convertArticle = aiData.rewritten || "";
     const keywords = aiData.keywords || [];
     const vocabulary = aiData.tagged_words || [];
+    console.log(vocabulary);
     let articleId = null; //비회원의 경우 null 반환
     if (!originalArticle) {
       return res.status(500).json({
@@ -219,7 +220,7 @@ exports.transform = async (req, res) => {
         embedding: aiData.embedding || null,
       });
 
-      vocabulary = await articleModel.saveVoca(userId, articleId, vocabulary);
+      await articleModel.saveVoca(userId, articleId, vocabulary);
     }
     //비회원 횟수 차감
     if (!userId) {
