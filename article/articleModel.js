@@ -83,7 +83,7 @@ exports.saveArticle = async ({
 }) => {
   const [result] = await db.query(
     `
-    INSERT INTO Article
+    INSERT IGNORE INTO Article
     (
       user_id,
       title,
