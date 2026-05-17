@@ -104,18 +104,33 @@ exports.login = async (req, res) => {
       nickname: user.nickname,
       level: user.level,
     };
-    logger.info(`로그인 성공: ${email}`, "auth-service");
-    res.json({
-      timestamp: new Date().toISOString(),
-      success: true,
-      code: "AUTH_200",
-      message: "로그인에 성공했습니다.",
-      result: {
-        userId: user.user_id,
-        nickname: user.nickname,
-        level: user.level,
-        onboardingCompleted: !!user.onboarding_completed,
-      },
+
+    req.session.save((err) => {
+      if (err) {
+        logger.error(`세션 저장 실패: ${err.message}`, "auth-service");
+
+        return res.status(500).json({
+          timestamp: new Date().toISOString(),
+          success: false,
+          code: "AUTH_500",
+          message: "세션 저장 실패",
+          result: null,
+        });
+      }
+
+      logger.info(`로그인 성공: ${email}`, "auth-service");
+      res.json({
+        timestamp: new Date().toISOString(),
+        success: true,
+        code: "AUTH_200",
+        message: "로그인에 성공했습니다.",
+        result: {
+          userId: user.user_id,
+          nickname: user.nickname,
+          level: user.level,
+          onboardingCompleted: !!user.onboarding_completed,
+        },
+      });
     });
   } catch (err) {
     logger.error(`로그인 오류: ${err.message}`, "auth-service");
@@ -248,8 +263,8 @@ exports.mypage = async (req, res) => {
   }
 };
 exports.updatemypage = async (req, res) => {
-  const user = await userModel.findUserbyId(userId);
   const userId = req.session.user?.id;
+  const user = await userModel.findUserbyId(userId);
   if (!userId) {
     return res.status(401).json({
       timestamp: new Date().toISOString(),
