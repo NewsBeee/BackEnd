@@ -77,6 +77,7 @@ exports.saveArticle = async ({
   link,
   convertArticle,
   summary,
+  category,
   keywords,
   embedding,
 }) => {
@@ -89,20 +90,31 @@ exports.saveArticle = async ({
       link,
       convert_article,
       summary,
+      category,
       keywords,
       embedding
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?,?, ?, ?, ?, ?, ?)
 
     ON DUPLICATE KEY UPDATE
       title = VALUES(title),
       convert_article = VALUES(convert_article),
       summary = VALUES(summary),
+      category = VALUES(category),
       keywords = VALUES(keywords),
       embedding = VALUES(embedding),
       created_at = CURRENT_TIMESTAMP
     `,
-    [userId, title, link, convertArticle, summary, keywords, embedding],
+    [
+      userId,
+      title,
+      link,
+      convertArticle,
+      summary,
+      category,
+      keywords,
+      embedding,
+    ],
   );
 
   return result.insertId;

@@ -187,6 +187,7 @@ exports.transform = async (req, res) => {
     const convertArticle = aiData.rewritten || "";
     const keywords = aiData.keywords || [];
     const vocabulary = aiData.tagged_words || [];
+    const category = aiData.category || [];
 
     let articleId = null; //비회원의 경우 null 반환
     if (!originalArticle) {
@@ -216,6 +217,7 @@ exports.transform = async (req, res) => {
         link,
         convertArticle,
         summary,
+        category,
         keywords: JSON.stringify(keywords),
         embedding: aiData.embedding || null,
       });
@@ -238,6 +240,7 @@ exports.transform = async (req, res) => {
         link,
         convertArticle,
         summary,
+        category,
         vocabulary,
         nowCount,
       },
