@@ -133,10 +133,10 @@ exports.getCurrentChallenge = async (req, res) => {
     const challenge = await challengeModel.findCurrentChallenge(userId);
 
     if (!challenge) {
-      return res.status(404).json({
+      return res.status(200).json({
         timestamp: new Date().toISOString(),
-        success: false,
-        code: "CHALLENGE_604",
+        success: true,
+        code: "CHALLENGE_200",
         message: "현재 주간 목표가 존재하지 않습니다.",
         result: null,
       });
@@ -202,16 +202,6 @@ exports.getChallengeProgress = async (req, res) => {
       weekStart,
     );
 
-    if (!challenge) {
-      return res.status(404).json({
-        timestamp: new Date().toISOString(),
-        success: false,
-        code: "CHALLENGE_604",
-        message: "해당 주차 챌린지를 찾을 수 없습니다.",
-        result: null,
-      });
-    }
-
     const weekEnd = getWeekEnd(weekStart);
 
     const dailyLogs = await challengeModel.findWeeklyReadingLogs(
@@ -220,19 +210,39 @@ exports.getChallengeProgress = async (req, res) => {
       weekEnd,
     );
 
-    const challengeLogs = await challengeModel.findWeeklyChallengeLogs(
-      userId,
-      weekStart,
-      weekEnd,
-      challenge.category,
-    );
-
     const dailyStatus = createDefaultDailyStatus();
 
     for (const log of dailyLogs) {
       const dayKey = dayMap[new Date(log.read_date).getDay()];
       dailyStatus[dayKey] = true;
     }
+
+    const user = await challengeModel.findUserById(userId);
+
+    if (!challenge) {
+      return res.status(200).json({
+        timestamp: new Date().toISOString(),
+        success: true,
+        code: "CHALLENGE_200",
+        message: "주간 읽기 기록 조회에 성공했습니다.",
+        result: {
+          category: null,
+          targetArticleCount: 0,
+          completedArticleCount: 0,
+          readArticleCount: dailyLogs.length,
+          dailyStatus,
+          level: user.level,
+          promotionQuizAvailable: user.total_success >= 4,
+        },
+      });
+    }
+
+    const challengeLogs = await challengeModel.findWeeklyChallengeLogs(
+      userId,
+      weekStart,
+      weekEnd,
+      challenge.category,
+    );
 
     const completedArticleCount = challengeLogs.length;
     const isSuccess = completedArticleCount >= challenge.goal;
@@ -245,7 +255,7 @@ exports.getChallengeProgress = async (req, res) => {
       await challengeModel.updateUserTotalSuccess(userId);
     }
 
-    const user = await challengeModel.findUserById(userId);
+    const updatedUser = await challengeModel.findUserById(userId);
 
     return res.status(200).json({
       timestamp: new Date().toISOString(),
@@ -256,8 +266,10 @@ exports.getChallengeProgress = async (req, res) => {
         category: challenge.category,
         targetArticleCount: challenge.goal,
         completedArticleCount,
+        readArticleCount: dailyLogs.length,
         dailyStatus,
-        promotionQuizAvailable: user.total_success >= 4,
+        level: user.level,
+        promotionQuizAvailable: updatedUser.total_success >= 4,
       },
     });
   } catch (err) {
