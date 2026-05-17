@@ -133,10 +133,10 @@ exports.getCurrentChallenge = async (req, res) => {
     const challenge = await challengeModel.findCurrentChallenge(userId);
 
     if (!challenge) {
-      return res.status(404).json({
+      return res.status(200).json({
         timestamp: new Date().toISOString(),
-        success: false,
-        code: "CHALLENGE_604",
+        success: true,
+        code: "CHALLENGE_200",
         message: "현재 주간 목표가 존재하지 않습니다.",
         result: null,
       });
@@ -231,6 +231,7 @@ exports.getChallengeProgress = async (req, res) => {
           completedArticleCount: 0,
           readArticleCount: dailyLogs.length,
           dailyStatus,
+          level: user.level,
           promotionQuizAvailable: user.total_success >= 4,
         },
       });
@@ -267,6 +268,7 @@ exports.getChallengeProgress = async (req, res) => {
         completedArticleCount,
         readArticleCount: dailyLogs.length,
         dailyStatus,
+        level: user.level,
         promotionQuizAvailable: updatedUser.total_success >= 4,
       },
     });
