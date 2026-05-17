@@ -10,6 +10,10 @@ exports.signup = async (req, res) => {
     const hashed = await bcrypt.hash(password, 10); //비밀번호
     await userModel.createUser(nickname, hashed, email);
     const user = await userModel.findUser(email);
+    req.session.is_logined = true;
+    req.session.email = user.email;
+    req.session.nickname = user.nickname;
+
     req.session.user = {
       id: user.user_id,
       email: user.email,
