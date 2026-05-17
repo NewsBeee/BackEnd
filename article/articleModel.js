@@ -107,23 +107,23 @@ exports.saveArticle = async ({
 
   return result.insertId;
 };
-exports.saveVoca = async (userId, articleId, vocabularies) => {
-  for (const vocab of vocabularies) {
-    await db.query(
-      `
-      INSERT IGNORE INTO Voca
-      (
-        user_id,
-        article_id,
-        word,
-        meaning
-      )
-      VALUES ( ?, ?, ?, ?)
-      `,
-      [userId, articleId, vocab.word, vocab.meaning],
-    );
-  }
-};
+// exports.saveVoca = async (userId, articleId, vocabularies) => {
+//   for (const vocab of vocabularies) {
+//     await db.query(
+//       `
+//       INSERT IGNORE INTO Voca
+//       (
+//         user_id,
+//         article_id,
+//         word,
+//         meaning
+//       )
+//       VALUES ( ?, ?, ?, ?)
+//       `,
+//       [userId, articleId, vocab.word, vocab.meaning],
+//     );
+//   }
+// };
 exports.saveLog = async (userId, articleId) => {
   await db.query(
     `
