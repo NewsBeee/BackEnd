@@ -214,7 +214,13 @@ exports.getChallengeProgress = async (req, res) => {
 
     const weekEnd = getWeekEnd(weekStart);
 
-    const logs = await challengeModel.findWeeklyReadingLogs(
+    const dailyLogs = await challengeModel.findWeeklyReadingLogs(
+      userId,
+      weekStart,
+      weekEnd,
+    );
+
+    const challengeLogs = await challengeModel.findWeeklyChallengeLogs(
       userId,
       weekStart,
       weekEnd,
@@ -223,12 +229,12 @@ exports.getChallengeProgress = async (req, res) => {
 
     const dailyStatus = createDefaultDailyStatus();
 
-    for (const log of logs) {
+    for (const log of dailyLogs) {
       const dayKey = dayMap[new Date(log.read_date).getDay()];
       dailyStatus[dayKey] = true;
     }
 
-    const completedArticleCount = logs.length;
+    const completedArticleCount = challengeLogs.length;
     const isSuccess = completedArticleCount >= challenge.goal;
 
     if (challenge.is_success !== isSuccess) {
