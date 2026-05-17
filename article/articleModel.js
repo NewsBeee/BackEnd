@@ -139,7 +139,7 @@ exports.saveArticle = async ({
 exports.saveLog = async (userId, articleId) => {
   await db.query(
     `
-    INSERT INTO Reading_log (user_id, article_id, read_date)
+    INSERT IGNORE INTO Reading_log (user_id, article_id, read_date)
     VALUES (?, ?, NOW())
   `,
     [userId, articleId],
