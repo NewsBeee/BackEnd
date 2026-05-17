@@ -66,8 +66,20 @@ exports.countReadArticles = async (userId) => {
   return rows[0];
 };
 
-// 특정 기간 동안, 특정 카테고리 기사 읽은 기록 조회
-exports.findWeeklyReadingLogs = async (userId, weekStart, weekEnd, category) => {
+// 이번 주 읽기 기록 체크용: 카테고리 상관없이 읽은 기사 조회
+exports.findWeeklyReadingLogs = async (userId, weekStart, weekEnd) => {
+  const [rows] = await db.query(
+    `SELECT read_date, article_id
+     FROM Reading_log
+     WHERE user_id = ?
+       AND read_date BETWEEN ? AND ?`,
+    [userId, weekStart, weekEnd],
+  );
+  return rows;
+};
+
+// 챌린지 목표 달성 계산용: 챌린지 카테고리와 같은 기사만 조회
+exports.findWeeklyChallengeLogs = async (userId, weekStart, weekEnd, category) => {
   const [rows] = await db.query(
     `SELECT rl.read_date, a.article_id
      FROM Reading_log rl
