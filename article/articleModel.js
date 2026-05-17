@@ -111,7 +111,7 @@ exports.saveVoca = async (userId, articleId, vocabularies) => {
   for (const vocab of vocabularies) {
     await db.query(
       `
-      INSERT INTO Voca
+      INSERT IGNORE INTO Voca
       (
         user_id,
         article_id,
