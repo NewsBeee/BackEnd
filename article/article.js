@@ -219,7 +219,7 @@ exports.transform = async (req, res) => {
         embedding: aiData.embedding || null,
       });
 
-      await articleModel.saveVoca(userId, articleId, vocabulary);
+      vocabulary = await articleModel.saveVoca(userId, articleId, vocabulary);
     }
     //비회원 횟수 차감
     if (!userId) {
