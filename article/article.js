@@ -244,6 +244,12 @@ exports.transform = async (req, res) => {
     });
   } catch (err) {
     logger.error(`기사 변환 오류: ${err.message}`, "article-service");
+    console.error("===== 기사 변환 오류 =====");
+    console.error(err);
+    console.error("message:", err.message);
+    console.error("status:", err.response?.status);
+    console.error("data:", err.response?.data);
+    console.error("stack:", err.stack);
 
     return res.status(500).json({
       timestamp: new Date().toISOString(),
