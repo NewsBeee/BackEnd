@@ -147,7 +147,35 @@ exports.login = async (req, res) => {
     });
   }
 };
+exports.checkLogin = (req, res) => {
+  const user = req.session.user;
 
+  if (!user) {
+    return res.status(401).json({
+      timestamp: new Date().toISOString(),
+      success: false,
+      code: "AUTH_401",
+      message: "로그인이 필요합니다.",
+      result: {
+        is_login: false,
+      },
+    });
+  }
+
+  return res.status(200).json({
+    timestamp: new Date().toISOString(),
+    success: true,
+    code: "AUTH_200",
+    message: "로그인 상태입니다.",
+    result: {
+      is_login: true,
+      userId: user.id,
+      email: user.email,
+      nickname: user.nickname,
+      level: user.level,
+    },
+  });
+};
 exports.logout = (req, res) => {
   req.session.destroy((err) => {
     //세션 삭제
