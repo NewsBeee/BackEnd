@@ -334,16 +334,6 @@ exports.articledetail = async (req, res) => {
   const { articleId } = req.params;
 
   try {
-    if (!userId) {
-      return res.status(401).json({
-        timestamp: new Date().toISOString(),
-        success: false,
-        code: "ARTICLE_401",
-        message: "로그인이 필요합니다.",
-        result: null,
-      });
-    }
-
     const article = await articleModel.getArticleDetail(userId, articleId);
     const vocabulary = await articleModel.getVoca(userId, articleId);
 
