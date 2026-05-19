@@ -9,16 +9,6 @@ exports.recommendations = async (req, res) => {
   const userId = req.session.user?.id;
 
   try {
-    if (!userId) {
-      return res.status(401).json({
-        timestamp: new Date().toISOString(),
-        success: false,
-        code: "RECOMMEND_401",
-        message: "로그인이 필요합니다.",
-        result: null,
-      });
-    }
-
     // 1. 캐시 먼저 확인
     const cached = await articleModel.findRecommendations(userId);
 
