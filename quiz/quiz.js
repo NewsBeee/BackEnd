@@ -132,6 +132,8 @@ exports.submitPromotionQuiz = async (req, res) => {
             : previousLevel + 1;
         await quizModel.updateUserLevel(userId, newLevel);
       }
+      await quizModel.markChallengesUsedForPromotion(userId);
+      await quizModel.updateUserTotalSuccess(userId);
     }
 
     return res.status(200).json({

@@ -40,3 +40,35 @@ exports.updateUserLevel = async (userId, level) => {
 
   return rows;
 };
+
+// 승급퀴즈에 사용한 챌린지 도장 소모 처리
+exports.markChallengesUsedForPromotion = async (userId) => {
+  const [rows] = await db.query(
+    `UPDATE Challenge
+     SET used_for_promotion = true
+     WHERE user_id = ?
+       AND is_success = true
+       AND used_for_promotion = false`,
+    [userId],
+  );
+
+  return rows;
+};
+
+// 사용하지 않은 챌린지 도장 개수로 total_success 재계산
+exports.updateUserTotalSuccess = async (userId) => {
+  const [rows] = await db.query(
+    `UPDATE User
+     SET total_success = (
+       SELECT COUNT(*)
+       FROM Challenge
+       WHERE user_id = ?
+         AND is_success = true
+         AND used_for_promotion = false
+     )
+     WHERE user_id = ?`,
+    [userId, userId],
+  );
+
+  return rows;
+};

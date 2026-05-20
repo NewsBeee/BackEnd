@@ -43,7 +43,9 @@ exports.updateUserTotalSuccess = async (userId) => {
      SET total_success = (
        SELECT COUNT(*)
        FROM Challenge
-       WHERE user_id = ? AND is_success = true
+       WHERE user_id = ?
+         AND is_success = true
+         AND used_for_promotion = false
      )
      WHERE user_id = ?`,
     [userId, userId],
