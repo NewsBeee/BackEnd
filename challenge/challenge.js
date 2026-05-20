@@ -232,6 +232,7 @@ exports.getChallengeProgress = async (req, res) => {
           readArticleCount: dailyLogs.length,
           dailyStatus,
           level: user.level,
+          promotionStampCount: user.total_success,
           promotionQuizAvailable: user.total_success >= 4,
         },
       });
@@ -269,6 +270,7 @@ exports.getChallengeProgress = async (req, res) => {
         readArticleCount: dailyLogs.length,
         dailyStatus,
         level: user.level,
+        promotionStampCount: updatedUser.total_success,
         promotionQuizAvailable: updatedUser.total_success >= 4,
       },
     });
