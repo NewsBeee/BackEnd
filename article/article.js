@@ -178,7 +178,8 @@ exports.transform = async (req, res) => {
     const keywords = aiData.keywords || [];
     const vocabulary = aiData.tagged_words || [];
     const category = aiData.category || [];
-    console.log(vocabulary);
+    const replacement_map = aiData.replacement_map || [];
+    console.log(replacement_map);
     let articleId = null; //비회원의 경우 null 반환
     if (!originalArticle) {
       return res.status(500).json({
@@ -233,6 +234,7 @@ exports.transform = async (req, res) => {
         category,
         vocabulary,
         nowCount,
+        replacement_map,
       },
     });
   } catch (err) {
